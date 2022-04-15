@@ -2,16 +2,20 @@ import subprocess
 import os
 import re
 import xml.etree.ElementTree
+import pathlib
 
 class Client:
-    def __init__(self, cwd = os.getcwd(), stdout = subprocess.PIPE):
+    def __init__(self, cwd: str = os.getcwd(), stdout = subprocess.PIPE):
         self.cmd = ["svn"]
         self.log_content = None
         self.cwd = cwd
         self.stdout = stdout
         self.diff_cache = {}
 
-    def log(self, decoding = 'utf8'):
+        self.cwd = str(pathlib.Path(cwd).absolute().resolve())
+        
+
+    def log(self):
         log_cmd = self.cmd + ["log", "--xml"]
 
         if self.log_content is None:
@@ -90,3 +94,11 @@ class Client:
             stat.append((added, removed, file_name))
         
         return stat
+
+
+def main() -> None:
+    svn = Client(cwd='../tests/test_svn')
+    print(svn.log())
+
+if __name__ == '__main__':
+    main()
