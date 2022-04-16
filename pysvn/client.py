@@ -29,17 +29,15 @@ class Client:
         
 
     def log(self, file: str = None, revision: Union[int, Revision, str] = Revision.HEAD) -> List[LogEntry]:
-        revision = revision.value if type(revision) == Revision else revision
+        revision = revision.name if type(revision) == Revision else revision
         log_cmd = f'svn log --xml --revision {revision}' if not file else f'svn log {file} --xml --revision {revision}'
         log_entries: List[LogEntry] = []
         cmd = subprocess.Popen(log_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self.cwd)
 
         stderr = cmd.stderr.read()
-        if stderr:
-            err = stderr.decode('utf-8')
-            if 'No such revision' in err:
-                rev_num = err.split(' ')[-1]
-                raise NoSuchRevisionError(f'no such revision {rev_num}')
+        if stderr and 'No such revision' in stderr.decode('utf-8'):
+            rev_num = err.split(' ')[-1]
+            raise NoSuchRevisionError(f'no such revision {rev_num}')
 
         data = cmd.stdout.read()
         
@@ -51,7 +49,7 @@ class Client:
 
                 date = None
                 if entry_info.get('date'):
-                    date_str = str(entry_info.get('date')).split('.', 1)[0]
+                    date_str = entry_info.get('date').split('.', 1)[0]
                     date = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S')
 
                 log_entry = LogEntry(
