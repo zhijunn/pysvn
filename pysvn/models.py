@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum, auto
+from tkinter.tix import IMMEDIATE
 from typing import List
 
 @dataclass
@@ -26,3 +27,9 @@ class SVNItemPath:
 @dataclass
 class Diff:
     paths: List[SVNItemPath]
+
+class Depth(Enum):
+    EMPTY = 'empty'
+    FILES = 'files'
+    IMMEDIATES = 'immediates'
+    INFINITY = 'infinity'

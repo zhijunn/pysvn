@@ -8,23 +8,26 @@ import pathlib
 
 from errors import RepositoryDirDoesNotExistError, SVNNotInstalledError, NoSuchRevisionError, RevisionSyntaxError
 
-from models import LogEntry, Revision, Diff, SVNItemPath
+from models import LogEntry, Revision, Diff, SVNItemPath, Depth
 
 from utils import check_svn_installed, get_longest_line_len
+
 
 class Client:
     def __init__(self, repository_dir: str = os.getcwd()) -> None:
         if not check_svn_installed():
-            raise SVNNotInstalledError('Is svn installed? If so, check that its in path.')
+            raise SVNNotInstalledError(
+                'Is svn installed? If so, check that its in path.')
 
         repo_dir = pathlib.Path(repository_dir)
         if not repo_dir.exists():
-            raise RepositoryDirDoesNotExistError('the repository_dir provided does not exist')
+            raise RepositoryDirDoesNotExistError(
+                'the repository_dir provided does not exist')
         if not repo_dir.is_dir():
-            raise NotADirectoryError('the repository_dir provided is not a directory')
+            raise NotADirectoryError(
+                'the repository_dir provided is not a directory')
 
         self.cwd = str(repo_dir.resolve())
-        
 
     def log(self, file: str = None, revision: Union[int, Revision, str] = Revision.HEAD) -> List[LogEntry]:
         revision = revision.name if type(revision) == Revision else revision
@@ -38,7 +41,7 @@ class Client:
             raise NoSuchRevisionError(f'no such revision {rev_num}')
 
         data = cmd.stdout.read()
-        
+
         try:
             root = xml.etree.ElementTree.fromstring(data)
 
@@ -61,17 +64,15 @@ class Client:
 
             return log_entries
         except xml.etree.ElementTree.ParseError:
-            raise RevisionSyntaxError(f"with great power comes great responsibility, '{revision}' is not valid revision syntax")
-
+            raise RevisionSyntaxError(
+                f"with great power comes great responsibility, '{revision}' is not valid revision syntax")
 
     def _run_svn_cmd(self, args: List[str]) -> Popen[bytes]:
         args.insert(0, 'svn')
         return subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self.cwd)
 
-
     def __svn_update__(self) -> None:
         self._run_svn_cmd(['update'])
-
 
     def diff(self, start_revision: int, end_revision: int = None) -> Diff:
         self.__svn_update__()
@@ -79,8 +80,9 @@ class Client:
         if not end_revision:
             end_revision = 'HEAD'
 
-        cmd = self._run_svn_cmd(['diff', '-r', f'{start_revision}:{end_revision}', '--xml', '--summarize'])
-        
+        cmd = self._run_svn_cmd(
+            ['diff', '-r', f'{start_revision}:{end_revision}', '--xml', '--summarize'])
+
         stderr = cmd.stderr.read()
         if stderr and 'No such revision' in stderr.decode('utf-8'):
             rev_num = stderr.decode('utf-8').split(' ')[-1]
@@ -89,7 +91,7 @@ class Client:
         data = cmd.stdout.read()
         paths: List[SVNItemPath] = []
         root = xml.etree.ElementTree.fromstring(data)
-        
+
         for e in root.iter('path'):
             attrs = e.attrib
             filepath = e.text
@@ -102,7 +104,22 @@ class Client:
             paths.append(svn_path)
 
         return Diff(paths)
-    
+
+    def revert(self, path: str, recursive: bool = False, remove_added: bool = False, depth: Depth = None) -> str:
+        filepath = pathlib.Path(path)
+        if not filepath.exists():
+            raise ValueError(f'{path} does not exist')
+
+        revert_cmd = ['revert', str(filepath.resolve())]
+        if recursive:
+            revert_cmd.append('--recursive')
+        if remove_added:
+            revert_cmd.append('--remove-added')
+        if depth:
+            revert_cmd.append('--depth')
+            revert_cmd.append(depth.value)
+        
+        
 
     def __str__(self) -> str:
         cmd = self._run_svn_cmd(['info'])
@@ -110,7 +127,6 @@ class Client:
         num_of_signs = get_longest_line_len(stats.split('\n'))
         signs = '=' * num_of_signs
         return f'SVN Client\n{signs}\n{stats}\n{signs}'
-    
 
     def __repr__(self) -> str:
         return f'Client(cwd={self.cwd})'
@@ -119,6 +135,7 @@ class Client:
 def main() -> None:
     svn = Client(repository_dir='../tests/test_svn')
     print(svn)
+
 
 if __name__ == '__main__':
     main()
