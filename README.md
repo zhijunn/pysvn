@@ -17,7 +17,7 @@
 <h3 align="center">PySVN</h3>
 
   <p align="center">
-    PySVN is a SVN command-line client wrapper.
+    SVN command-line client wrapper.
     <br />
     <a href="https://github.com/ryanbender2/pysvn"><strong>Explore the docs »</strong></a>
     <br />
