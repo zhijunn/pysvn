@@ -100,7 +100,7 @@ class Client:
                 f"with great power comes great responsibility, '{revision}' is not valid revision syntax")
 
 
-    def _run_svn_cmd(self, args: List[str]) -> Popen[bytes]:
+    def _run_svn_cmd(self, args: List[str]) -> Popen:
         args.insert(0, 'svn')
         return subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self.cwd)
 
