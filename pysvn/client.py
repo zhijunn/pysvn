@@ -36,7 +36,7 @@ class Client:
 
         stderr = cmd.stderr.read()
         if stderr and 'No such revision' in stderr.decode('utf-8'):
-            rev_num = err.split(' ')[-1]
+            rev_num = stderr.split(' ')[-1]
             raise NoSuchRevisionError(f'no such revision {rev_num}')
 
         data = cmd.stdout.read()
