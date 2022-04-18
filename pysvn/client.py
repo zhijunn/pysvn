@@ -2,7 +2,6 @@ from datetime import datetime
 import subprocess
 from subprocess import Popen
 import os
-import re
 from typing import List, Union
 import xml.etree.ElementTree
 import pathlib
@@ -15,8 +14,6 @@ from utils import check_svn_installed
 
 class Client:
     def __init__(self, repository_dir: str = os.getcwd()) -> None:
-        self.diff_cache = {}
-
         if not check_svn_installed():
             raise SVNNotInstalledError('Is svn installed? If so, check that its in path.')
 
