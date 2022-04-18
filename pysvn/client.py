@@ -10,7 +10,7 @@ from errors import RepositoryDirDoesNotExistError, SVNNotInstalledError, NoSuchR
 
 from models import LogEntry, Revision, Diff, SVNItemPath
 
-from utils import check_svn_installed
+from utils import check_svn_installed, get_longest_line_len
 
 class Client:
     def __init__(self, repository_dir: str = os.getcwd()) -> None:
@@ -102,11 +102,23 @@ class Client:
             paths.append(svn_path)
 
         return Diff(paths)
+    
+
+    def __str__(self) -> str:
+        cmd = self._run_svn_cmd(['info'])
+        stats = cmd.stdout.read().decode('utf-8').strip()
+        num_of_signs = get_longest_line_len(stats.split('\n'))
+        signs = '=' * num_of_signs
+        return f'SVN Client\n{signs}\n{stats}\n{signs}'
+    
+
+    def __repr__(self) -> str:
+        return f'Client(cwd={self.cwd})'
 
 
 def main() -> None:
     svn = Client(repository_dir='../tests/test_svn')
-    print(svn.diff(1))
+    print(svn)
 
 if __name__ == '__main__':
     main()
