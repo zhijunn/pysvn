@@ -14,10 +14,28 @@ from utils import check_svn_installed, get_longest_line_len
 
 
 class Client:
+    """SVN client.
+    
+    Subversion is a tool for version control.
+    For additional information, see http://subversion.apache.org/
+    """
     def __init__(self, repository_dir: str = os.getcwd()) -> None:
+        """SVN client.
+
+        Subversion is a tool for version control.
+        For additional information, see http://subversion.apache.org/
+
+        Args:
+            repository_dir (str, optional): svn repository directory. Defaults to os.getcwd().
+
+        Raises:
+            SVNNotInstalledError: svn command line client is not installed.
+            RepositoryDirDoesNotExistError: repository_dir provided does not exist.
+            NotADirectoryError: reposiory_dir provided is not a directory.
+        """
         if not check_svn_installed():
             raise SVNNotInstalledError(
-                'Is svn installed? If so, check that its in path.')
+                'Is the command line svn client installed? If so, check that it\'s in path.')
 
         repo_dir = pathlib.Path(repository_dir)
         if not repo_dir.exists():
@@ -29,7 +47,21 @@ class Client:
 
         self.cwd = str(repo_dir.resolve())
 
+
     def log(self, file: str = None, revision: Union[int, Revision, str] = Revision.HEAD) -> List[LogEntry]:
+        """Show the log messages for a set of revision(s) and/or path(s).
+
+        Args:
+            file (str, optional): file to get logs for. Defaults to None.
+            revision (int | Revision | str, optional): revision. Defaults to HEAD.
+
+        Raises:
+            NoSuchRevisionError: unknown revision.
+            RevisionSyntaxError: invalid revision syntax when providing a str.
+
+        Returns:
+            List[LogEntry]: list of log entries.
+        """
         revision = revision.name if type(revision) == Revision else revision
         log_cmd = f'log --xml --revision {revision}' if not file else f'log {file} --xml --revision {revision}'
         log_entries: List[LogEntry] = []
@@ -66,7 +98,7 @@ class Client:
         except xml.etree.ElementTree.ParseError:
             raise RevisionSyntaxError(
                 f"with great power comes great responsibility, '{revision}' is not valid revision syntax")
-                
+
 
     def _run_svn_cmd(self, args: List[str]) -> Popen[bytes]:
         args.insert(0, 'svn')
