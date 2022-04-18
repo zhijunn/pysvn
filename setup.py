@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name="pysvn_2",
+    name="pysvn2",
     version="0.2.0",
     keywords=["svn", "pysvn"],
     description="Svn for python.",

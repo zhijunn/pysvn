@@ -19,11 +19,11 @@
   <p align="center">
     SVN command-line client wrapper.
     <br />
-    <a href="https://github.com/ryanbender2/pysvn"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/ryanbender2/pysvn"><strong>Explore the docs</strong></a>
     <br />
     <br />
     <a href="https://github.com/ryanbender2/pysvn/issues">Report Bug</a>
-    ·
+    ---
     <a href="https://github.com/ryanbender2/pysvn/issues">Request Feature</a>
   </p>
 </div>
@@ -75,7 +75,7 @@ This client currently only supports 3 operations: `revert`, `log`, and `diff`. P
 Installers are available on `Pypi`.
 
 ```
-python -m pip install --upgrade pysvn_2
+python -m pip install --upgrade pysvn2
 ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
