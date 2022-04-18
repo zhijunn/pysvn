@@ -191,9 +191,11 @@ class Client:
     def __str__(self) -> str:
         cmd = self._run_svn_cmd(['info'])
         stats = cmd.stdout.read().decode('utf-8').strip()
-        num_of_signs = get_longest_line_len(stats.split('\n'))
-        signs = '=' * num_of_signs
-        return f'SVN Client\n{signs}\n{stats}\n{signs}'
+        if stats:
+            num_of_signs = get_longest_line_len(stats.split('\n'))
+            signs = '=' * num_of_signs
+            return f'SVN Client\n{signs}\n{stats}\n{signs}'
+        return f'SVN Client - {self.cwd} - no svn repository info to show'
 
 
     def __repr__(self) -> str:
