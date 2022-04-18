@@ -106,6 +106,22 @@ class Client:
         return Diff(paths)
 
     def revert(self, path: str, recursive: bool = False, remove_added: bool = False, depth: Depth = None) -> str:
+        """Restore pristine working copy state (undo local changes).
+
+        Revert changes in the working copy at or within PATH, and remove
+        conflict markers as well, if any.
+
+        This subcommand does not revert already committed changes.
+
+        Args:
+            path (str): path of item to revert.
+            recursive (bool, optional): descend recursively, same as Depth.INFINITY. Defaults to False.
+            remove_added (bool, optional): reverting an added item will remove it from disk. Defaults to False.
+            depth (Depth, optional): limit operation by depth. Defaults to None.
+
+        Returns:
+            str: revert output
+        """
         revert_cmd = ['revert', path]
         if recursive:
             revert_cmd.append('--recursive')
