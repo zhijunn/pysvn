@@ -66,15 +66,30 @@ class Client:
         except xml.etree.ElementTree.ParseError:
             raise RevisionSyntaxError(
                 f"with great power comes great responsibility, '{revision}' is not valid revision syntax")
+                
 
     def _run_svn_cmd(self, args: List[str]) -> Popen[bytes]:
         args.insert(0, 'svn')
         return subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self.cwd)
 
+
     def __svn_update__(self) -> None:
         self._run_svn_cmd(['update'])
 
+
     def diff(self, start_revision: int, end_revision: int = None) -> Diff:
+        """Display local changes or differences between two revisions or paths.
+
+        Args:
+            start_revision (int): starting revision
+            end_revision (int, optional): ending revision. Defaults to HEAD.
+
+        Raises:
+            NoSuchRevisionError: unknown revision.
+
+        Returns:
+            Diff: diff between starting and ending revisions.
+        """
         self.__svn_update__()
 
         if not end_revision:
@@ -104,6 +119,7 @@ class Client:
             paths.append(svn_path)
 
         return Diff(paths)
+
 
     def revert(self, path: str, recursive: bool = False, remove_added: bool = False, depth: Depth = None) -> str:
         """Restore pristine working copy state (undo local changes).
@@ -146,6 +162,7 @@ class Client:
         num_of_signs = get_longest_line_len(stats.split('\n'))
         signs = '=' * num_of_signs
         return f'SVN Client\n{signs}\n{stats}\n{signs}'
+
 
     def __repr__(self) -> str:
         return f'Client(cwd={self.cwd})'
