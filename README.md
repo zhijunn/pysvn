@@ -75,7 +75,7 @@ This client currently only supports 3 operations: `revert`, `log`, and `diff`. P
 Installers are available on `Pypi`.
 
 ```
-python -m pip install --upgrade pysvn
+python -m pip install --upgrade pysvn_2
 ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
