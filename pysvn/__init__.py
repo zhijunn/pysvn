@@ -1,4 +1,8 @@
 from pysvn.client import Client
+from pysvn.utils import *
+from pysvn.models import *
+from pysvn.errors import *
+
 
 name = "pysvn"
 

@@ -6,16 +6,16 @@ from typing import List, Union
 import xml.etree.ElementTree
 import pathlib
 
-from errors import RepositoryDirDoesNotExistError, SVNNotInstalledError, NoSuchRevisionError, RevisionSyntaxError
+from pysvn.errors import RepositoryDirDoesNotExistError, SVNNotInstalledError, NoSuchRevisionError, RevisionSyntaxError
 
-from models import LogEntry, Revision, Diff, SVNItemPath, Depth
+from pysvn.models import LogEntry, Revision, Diff, SVNItemPath, Depth
 
-from utils import check_svn_installed, get_longest_line_len
+from pysvn.utils import check_svn_installed, get_longest_line_len
 
 
 class Client:
     """SVN client.
-    
+
     Subversion is a tool for version control.
     For additional information, see http://subversion.apache.org/
     """
@@ -48,7 +48,7 @@ class Client:
         self.cwd = str(repo_dir.resolve())
 
 
-    def log(self, file: str = None, revision: Union[int, Revision, str] = Revision.HEAD) -> List[LogEntry]:
+    def log(self, file: str = None, revision: Union[int, Revision, str] = 'HEAD:1') -> List[LogEntry]:
         """Show the log messages for a set of revision(s) and/or path(s).
 
         Args:
@@ -198,12 +198,3 @@ class Client:
 
     def __repr__(self) -> str:
         return f'Client(cwd={self.cwd})'
-
-
-def main() -> None:
-    svn = Client(repository_dir='../tests/test_svn')
-    print(svn.revert('noice/good_times.txt'))
-
-
-if __name__ == '__main__':
-    main()
