@@ -1,5 +1,6 @@
 from datetime import datetime
 import subprocess
+from subprocess import Popen
 import os
 import re
 from typing import List, Union
@@ -8,7 +9,7 @@ import pathlib
 
 from errors import RepositoryDirDoesNotExistError, SVNNotInstalledError, NoSuchRevisionError, RevisionSyntaxError
 
-from models import LogEntry, Revision
+from models import LogEntry, Revision, Diff, SVNItemPath
 
 from utils import check_svn_installed
 
@@ -30,13 +31,13 @@ class Client:
 
     def log(self, file: str = None, revision: Union[int, Revision, str] = Revision.HEAD) -> List[LogEntry]:
         revision = revision.name if type(revision) == Revision else revision
-        log_cmd = f'svn log --xml --revision {revision}' if not file else f'svn log {file} --xml --revision {revision}'
+        log_cmd = f'log --xml --revision {revision}' if not file else f'log {file} --xml --revision {revision}'
         log_entries: List[LogEntry] = []
-        cmd = subprocess.Popen(log_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self.cwd)
+        cmd = self._run_svn_cmd(log_cmd.split(' '))
 
         stderr = cmd.stderr.read()
         if stderr and 'No such revision' in stderr.decode('utf-8'):
-            rev_num = stderr.split(' ')[-1]
+            rev_num = stderr.decode('utf-8').split(' ')[-1]
             raise NoSuchRevisionError(f'no such revision {rev_num}')
 
         data = cmd.stdout.read()
@@ -66,61 +67,49 @@ class Client:
             raise RevisionSyntaxError(f"with great power comes great responsibility, '{revision}' is not valid revision syntax")
 
 
-    def diff(self, start_version, end_version = None, decoding = 'utf8', cache = False):
-        if end_version is None:
-            end_version = start_version
-            start_version = end_version - 1
+    def _run_svn_cmd(self, args: List[str]) -> Popen[bytes]:
+        args.insert(0, 'svn')
+        return subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self.cwd)
 
-        diff_cmd = self.cmd + ["diff", "-r", "{0}:{1}".format(start_version, end_version)]
 
-        if cache and self.diff_cache.setdefault(start_version, {})[end_version]:
-            diff_content = self.diff_cache[start_version][end_version]
-        else:
-            diff_content = []
-            data = subprocess.Popen(diff_cmd, stdout = self.stdout, cwd = self.cwd).stdout.read()
-            for b in data.split(b'\n'):
-                try:
-                    diff_content.append(bytes.decode(b, decoding))
-                except:
-                    diff_content.append(bytes.decode(b))
-                else:
-                    pass
+    def __svn_update__(self) -> None:
+        self._run_svn_cmd(['update'])
 
-        diff_content = "\n".join(diff_content)
 
-        if cache and self.diff_cache[start_version][end_version] is None:
-            self.diff_cache[start_version][end_version] = diff_content
+    def diff(self, start_revision: int, end_revision: int = None) -> Diff:
+        self.__svn_update__()
 
-        return diff_content
+        if not end_revision:
+            end_revision = 'HEAD'
 
-    def numstat(self, start_version, end_version = None, decoding = 'utf8', cache = False):
-        stat = []
-        file_name = None
-
-        diff_content = self.diff(start_version, end_version, decoding, cache)
-        for s in diff_content.split('\n'):
-            if s.startswith('+++'):
-                if file_name:    
-                    stat.append((added, removed, file_name))
-                added = 0
-                removed = 0
-                file_name = re.match(r'\+\+\+ (\S+)', s).group(1)
-            elif s.startswith('---'):
-                pass
-            elif s.startswith('+'):
-                added = added + 1
-            elif s.startswith('-'):
-                removed = removed + 1
-
-        if file_name:
-            stat.append((added, removed, file_name))
+        cmd = self._run_svn_cmd(['diff', '-r', f'{start_revision}:{end_revision}', '--xml', '--summarize'])
         
-        return stat
+        stderr = cmd.stderr.read()
+        if stderr and 'No such revision' in stderr.decode('utf-8'):
+            rev_num = stderr.decode('utf-8').split(' ')[-1]
+            raise NoSuchRevisionError(f'no such revision {rev_num}')
+
+        data = cmd.stdout.read()
+        paths: List[SVNItemPath] = []
+        root = xml.etree.ElementTree.fromstring(data)
+        
+        for e in root.iter('path'):
+            attrs = e.attrib
+            filepath = e.text
+            svn_path = SVNItemPath(
+                item=attrs.get('item'),
+                props=attrs.get('props'),
+                kind=attrs.get('kind'),
+                filepath=filepath
+            )
+            paths.append(svn_path)
+
+        return Diff(paths)
 
 
 def main() -> None:
     svn = Client(repository_dir='../tests/test_svn')
-    print(svn.log(revision='1:2'))
+    print(svn.diff(1))
 
 if __name__ == '__main__':
     main()
