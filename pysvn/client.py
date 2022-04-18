@@ -106,11 +106,7 @@ class Client:
         return Diff(paths)
 
     def revert(self, path: str, recursive: bool = False, remove_added: bool = False, depth: Depth = None) -> str:
-        filepath = pathlib.Path(path)
-        if not filepath.exists():
-            raise ValueError(f'{path} does not exist')
-
-        revert_cmd = ['revert', str(filepath.resolve())]
+        revert_cmd = ['revert', path]
         if recursive:
             revert_cmd.append('--recursive')
         if remove_added:
@@ -119,6 +115,13 @@ class Client:
             revert_cmd.append('--depth')
             revert_cmd.append(depth.value)
         
+        cmd = self._run_svn_cmd(revert_cmd)
+        stdout = cmd.stdout.read().decode('utf-8')
+        stderr = cmd.stderr.read().decode('utf-8')
+        output = ''
+        output += stdout.strip()
+        output += stderr.strip()
+        return output
         
 
     def __str__(self) -> str:
@@ -134,7 +137,7 @@ class Client:
 
 def main() -> None:
     svn = Client(repository_dir='../tests/test_svn')
-    print(svn)
+    print(svn.revert('noice/good_times.txt'))
 
 
 if __name__ == '__main__':
