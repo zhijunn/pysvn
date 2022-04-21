@@ -79,7 +79,7 @@ REPOS="$1"
 TXN="$2"
 
 # Make sure that the log message contains some text.
-SVNLOOK=/usr/local/bin/svnlook
+SVNLOOK=/home/linuxbrew/.linuxbrew/Cellar/subversion/1.14.1_4/bin/svnlook
 $SVNLOOK log -t "$TXN" "$REPOS" | \
    grep "[a-zA-Z0-9]" > /dev/null || exit 1
 

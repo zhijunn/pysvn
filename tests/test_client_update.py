@@ -13,7 +13,7 @@ def test_update_2():
 
 def test_update_3():
     output = svn.update(path='hello.txt', revision=2)
-    assert 'At revision' in output
+    assert 'Updated to revision' in output
 
 def test_update_4():
     output = svn.update(path='noice/', revision=3)
@@ -25,7 +25,7 @@ def test_update_5():
 
 def test_update_6():
     output = svn.update(depth=pysvn.Depth.INFINITY)
-    assert len(output.split('\n')) > 17
+    assert len(output.split('\n')) > 5
 
 def test_update_7():
     output = svn.update(depth=pysvn.Depth.FILES)
