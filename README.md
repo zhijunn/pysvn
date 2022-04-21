@@ -14,7 +14,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-<h3 align="center">PySVN</h3>
+<h3 align="center">PySubversion</h3>
 
   <p align="center">
     SVN command-line client wrapper.
@@ -54,7 +54,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-This client currently only supports 3 operations: `revert`, `log`, and `diff`. Please put in a feature request if you would like more operations to be added!
+This client currently only supports the `revert`, `log`, `diff`, and `update` operations. Please put in a feature request if you would like more operations to be added!
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -139,6 +139,22 @@ svn.diff(1)
 
 ```python
 svn.diff(3, 4)
+```
+
+### update
+
+> Bring changes from the repository into the working copy.
+
+```python
+svn.update()
+```
+
+```python
+svn.update(path='foo.txt')
+```
+
+```python
+svn.update(path=['foo.txt', 'bar.c'])
 ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>

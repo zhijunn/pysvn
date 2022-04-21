@@ -1,5 +1,11 @@
 # pysvn Change Log
 
+## [0.3.0] 2022-04-21
+
+- `[Support]` Added the `update` method.
+- `[Support]` General bug fixes.
+- `[Support]` Docstring updates.
+
 ## [0.2.0] 2022-04-18
 
 - `[Support]` Refactored `diff` method.
