@@ -12,3 +12,6 @@ class NoSuchRevisionError(Exception):
 
 class RevisionSyntaxError(Exception):
     pass
+
+class SVNUpdateError(Exception):
+    pass

@@ -6,11 +6,10 @@ from typing import List, Union
 import xml.etree.ElementTree
 import pathlib
 
-from pysvn.errors import RepositoryDirDoesNotExistError, SVNNotInstalledError, NoSuchRevisionError, RevisionSyntaxError
-
-from pysvn.models import LogEntry, Revision, Diff, SVNItemPath, Depth
-
-from pysvn.utils import check_svn_installed, get_longest_line_len
+from pysvn.errors import *
+from pysvn.models import *
+from pysvn.utils import *
+from pysvn.constants import *
 
 
 class Client:
@@ -53,7 +52,7 @@ class Client:
 
         Args:
             file (str, optional): file to get logs for. Defaults to None.
-            revision (int | Revision | str, optional): revision. Defaults to HEAD.
+            revision (int | Revision | str, optional): revision. Defaults to HEAD:1.
 
         Raises:
             NoSuchRevisionError: unknown revision.
@@ -107,7 +106,7 @@ class Client:
 
     def __svn_update__(self) -> None:
         self._run_svn_cmd(['update'])
-
+    
 
     def diff(self, start_revision: int, end_revision: int = None) -> Diff:
         """Display local changes or differences between two revisions or paths.
@@ -180,12 +179,49 @@ class Client:
             revert_cmd.append(depth.value)
         
         cmd = self._run_svn_cmd(revert_cmd)
-        stdout = cmd.stdout.read().decode('utf-8')
-        stderr = cmd.stderr.read().decode('utf-8')
-        output = ''
-        output += stdout.strip()
-        output += stderr.strip()
-        return output
+        stdout, stderr = get_output(cmd)
+        return '' + stdout.strip() + stderr.strip()
+    
+
+    def update(self, path: Union[str, List[str]] = None,
+               revision: int = None,
+               accept: CRAction = None,
+               depth: Depth = None,
+               force: bool = False,
+               ignore_externals: bool = False,
+               parents: bool = False,
+               adds_as_modification: bool = False) -> str:
+        update_cmd = ['update']
+        if path:
+            if type(path) == str:
+                update_cmd.append(path)
+            elif type(path) == list:
+                update_cmd.extend(path)
+        if revision:
+            update_cmd.extend(['--revision', str(revision)])
+        if accept:
+            update_cmd.extend(['--accept', accept.value])
+        if depth:
+            update_cmd.extend(['--depth', depth.value])
+        if force:
+            update_cmd.append('--force')
+        if ignore_externals:
+            update_cmd.append('--ignore-externals')
+        if parents:
+            update_cmd.append('--parents')
+        if adds_as_modification:
+            update_cmd.append('--adds-as-modification')
+        
+        stdout, stderr = get_output(self._run_svn_cmd(update_cmd))
+
+        if stderr:
+            if 'No such revision' in stderr:
+                rev_num = stderr.split(' ')[-1]
+                raise NoSuchRevisionError(f'no such revision {rev_num}')
+            else:
+                raise SVNUpdateError(stderr)
+
+        print(stdout)
         
 
     def __str__(self) -> str:

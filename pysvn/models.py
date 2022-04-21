@@ -10,12 +10,6 @@ class LogEntry:
     revision: str
     date: datetime
 
-class Revision(Enum):
-    HEAD = auto()
-    BASE = auto()
-    COMMITTED = auto()
-    PREV = auto()
-
 @dataclass
 class SVNItemPath:
     item: str
@@ -26,9 +20,3 @@ class SVNItemPath:
 @dataclass
 class Diff:
     paths: List[SVNItemPath]
-
-class Depth(Enum):
-    EMPTY = 'empty'
-    FILES = 'files'
-    IMMEDIATES = 'immediates'
-    INFINITY = 'infinity'

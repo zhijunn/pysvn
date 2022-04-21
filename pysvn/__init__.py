@@ -1,7 +1,11 @@
+'''A command line svn client.
+'''
+
 from pysvn.client import Client
 from pysvn.utils import *
 from pysvn.models import *
 from pysvn.errors import *
+from pysvn.constants import *
 
 
 name = "pysvn"
