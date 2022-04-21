@@ -13,16 +13,16 @@ from pysvn.constants import *
 
 
 class Client:
-    """SVN client.
+    """# A command-line SVN client.
 
     Subversion is a tool for version control.
-    For additional information, see http://subversion.apache.org/
+    For additional information, see [the subversion website](http://subversion.apache.org/)
     """
     def __init__(self, repository_dir: str = os.getcwd()) -> None:
-        """SVN client.
-
+        """# A command-line SVN client.
+        
         Subversion is a tool for version control.
-        For additional information, see http://subversion.apache.org/
+        For additional information, see [the subversion website](http://subversion.apache.org/)
 
         Args:
             repository_dir (str, optional): svn repository directory. Defaults to os.getcwd().
@@ -48,11 +48,11 @@ class Client:
 
 
     def log(self, file: str = None, revision: Union[int, Revision, str] = 'HEAD:1') -> List[LogEntry]:
-        """Show the log messages for a set of revision(s) and/or path(s).
+        """## Show the log messages for a set of revision(s) and/or path(s).
 
         Args:
             file (str, optional): file to get logs for. Defaults to None.
-            revision (int | Revision | str, optional): revision. Defaults to HEAD:1.
+            revision (int | Revision | str, optional): revision. Defaults to `HEAD:1`.
 
         Raises:
             NoSuchRevisionError: unknown revision.
@@ -109,11 +109,11 @@ class Client:
     
 
     def diff(self, start_revision: int, end_revision: int = None) -> Diff:
-        """Display local changes or differences between two revisions or paths.
+        """## Display local changes or differences between two revisions or paths.
 
         Args:
             start_revision (int): starting revision
-            end_revision (int, optional): ending revision. Defaults to HEAD.
+            end_revision (int, optional): ending revision. Defaults to `HEAD`.
 
         Raises:
             NoSuchRevisionError: unknown revision.
@@ -153,7 +153,7 @@ class Client:
 
 
     def revert(self, path: str, recursive: bool = False, remove_added: bool = False, depth: Depth = None) -> str:
-        """Restore pristine working copy state (undo local changes).
+        """## Restore pristine working copy state (undo local changes).
 
         Revert changes in the working copy at or within PATH, and remove
         conflict markers as well, if any.
@@ -191,6 +191,76 @@ class Client:
                ignore_externals: bool = False,
                parents: bool = False,
                adds_as_modification: bool = False) -> str:
+        """## Bring changes from the repository into the working copy.
+        Examples:
+            `output = svn.update()`\n
+            `output = svn.update(path='foo.txt')`\n
+            `output = svn.update(path='foo.txt', depth=Depth.FILES)`
+
+        If no revision is given, bring working copy up-to-date with HEAD rev.
+        Else synchronize working copy to revision.
+        Example:
+            `output = svn.update(path='foo.txt', revision=34)`
+
+        For each updated item a line will be printed with characters reporting
+        the action taken. These characters have the following meaning:
+
+        - A  Added
+        - D  Deleted
+        - U  Updated
+        - C  Conflict
+        - G  Merged
+        - E  Existed
+        - R  Replaced
+
+        Characters in the first column report about the item itself.
+        Characters in the second column report about properties of the item.
+        A `B` in the third column signifies that the lock for the file has
+        been broken or stolen.
+        A `C` in the fourth column indicates a tree conflict, while a `C` in
+        the first and second columns indicate textual conflicts in files
+        and in property values, respectively.
+
+        If `force` is `True`, unversioned obstructing paths in the working
+        copy do not automatically cause a failure if the update attempts to
+        add the same path.  If the obstructing path is the same type (file
+        or directory) as the corresponding path in the repository it becomes
+        versioned but its contents are left `as-is` in the working copy.
+        This means that an obstructing directory's unversioned children may
+        also obstruct and become versioned. For files, any content differences
+        between the obstruction and the repository are treated like a local
+        modification to the working copy. All properties from the repository
+        are applied to the obstructing path. Obstructing paths are reported
+        in the first column with code `E`.
+
+        If the specified update target is missing from the working copy but its
+        immediate parent directory is present, checkout the target into its
+        parent directory at the specified depth.  If `parents` is set,
+        create any missing parent directories of the target by checking them
+        out, too, at `depth=EMPTY`.
+
+        Use `depth` to set a new working copy depth on the
+        targets of this operation.
+
+        Args:
+            path (str | List[str], optional): path to file(s) to update (Example: `'foo.txt'` or `['foo.txt']`). Defaults to `'.'`.
+            revision (int, optional): revision number to update to. Defaults to None.
+            accept (CRAction, optional): specify automatic conflict resolution action. Defaults to None.
+            depth (Depth, optional): limit operation by depth. Defaults to None.
+            force (bool, optional): handle unversioned obstructions as changes. Defaults to False.
+            ignore_externals (bool, optional): ignore externals definitions. Defaults to False.
+            parents (bool, optional): make intermediate directories. Defaults to False.
+            adds_as_modification (bool, optional): Local additions are merged with incoming additions
+                                                   instead of causing a tree conflict. Use of this
+                                                   option is not recommended!. Defaults to False.
+
+        Raises:
+            NoSuchRevisionError: raised if a revision is given and its unknown.
+            SVNUpdateError: raised if something goes wrong in the svn update command.
+
+        Returns:
+            str: command output
+        """
         update_cmd = ['update']
         if path:
             if type(path) == str:
