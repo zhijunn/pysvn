@@ -3,8 +3,6 @@ import pytest
 import os
 import pathlib
 
-from pysvn.models import Depth
-
 svn = pysvn.Client(repository_dir='./tests/test_svn')
 
 def test_revert():
