@@ -220,9 +220,9 @@ class Client:
                 raise NoSuchRevisionError(f'no such revision {rev_num}')
             else:
                 raise SVNUpdateError(stderr)
-
-        print(stdout)
         
+        return stdout
+
 
     def __str__(self) -> str:
         cmd = self._run_svn_cmd(['info'])
