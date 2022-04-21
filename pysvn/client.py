@@ -65,13 +65,16 @@ class Client:
         log_cmd = f'log --xml --revision {revision}' if not file else f'log {file} --xml --revision {revision}'
         log_entries: List[LogEntry] = []
         cmd = self._run_svn_cmd(log_cmd.split(' '))
+        data, stderr = get_output(cmd)
 
-        stderr = cmd.stderr.read()
-        if stderr and 'No such revision' in stderr.decode('utf-8'):
-            rev_num = stderr.decode('utf-8').split(' ')[-1]
-            raise NoSuchRevisionError(f'no such revision {rev_num}')
-
-        data = cmd.stdout.read()
+        if stderr:
+            if 'No such revision' in stderr:
+                rev_num = stderr.split(' ')[-1]
+                raise NoSuchRevisionError(f'no such revision {rev_num}')
+            elif 'E155037' in stderr:
+                raise PreviousOperationNotFinishedError()
+            else:
+                raise SVNError(stderr)
 
         try:
             root = xml.etree.ElementTree.fromstring(data)
@@ -106,7 +109,7 @@ class Client:
 
     def __svn_update__(self) -> None:
         self._run_svn_cmd(['update'])
-    
+
 
     def diff(self, start_revision: int, end_revision: int = None) -> Diff:
         """## Display local changes or differences between two revisions or paths.
@@ -128,13 +131,17 @@ class Client:
 
         cmd = self._run_svn_cmd(
             ['diff', '-r', f'{start_revision}:{end_revision}', '--xml', '--summarize'])
+        data, stderr = get_output(cmd)
 
-        stderr = cmd.stderr.read()
-        if stderr and 'No such revision' in stderr.decode('utf-8'):
-            rev_num = stderr.decode('utf-8').split(' ')[-1]
-            raise NoSuchRevisionError(f'no such revision {rev_num}')
+        if stderr:
+            if 'No such revision' in stderr:
+                rev_num = stderr.split(' ')[-1]
+                raise NoSuchRevisionError(f'no such revision {rev_num}')
+            elif 'E155037' in stderr:
+                raise PreviousOperationNotFinishedError()
+            else:
+                raise SVNError(stderr)
 
-        data = cmd.stdout.read()
         paths: List[SVNItemPath] = []
         root = xml.etree.ElementTree.fromstring(data)
 
@@ -180,6 +187,10 @@ class Client:
         
         cmd = self._run_svn_cmd(revert_cmd)
         stdout, stderr = get_output(cmd)
+
+        if stderr and 'E155037' in stderr:
+            raise PreviousOperationNotFinishedError()
+
         return '' + stdout.strip() + stderr.strip()
     
 
@@ -288,6 +299,8 @@ class Client:
             if 'No such revision' in stderr:
                 rev_num = stderr.split(' ')[-1]
                 raise NoSuchRevisionError(f'no such revision {rev_num}')
+            elif 'E155037' in stderr:
+                raise PreviousOperationNotFinishedError()
             else:
                 raise SVNUpdateError(stderr)
         

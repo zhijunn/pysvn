@@ -1,6 +1,9 @@
 '''pysvn errors module.
 '''
 
+class SVNError(Exception):
+    pass
+
 class SVNNotInstalledError(Exception):
     pass
 
@@ -15,3 +18,7 @@ class RevisionSyntaxError(Exception):
 
 class SVNUpdateError(Exception):
     pass
+
+class PreviousOperationNotFinishedError(Exception):
+    def __init__(self, *args: object) -> None:
+        super().__init__('previous operation has not finished')
