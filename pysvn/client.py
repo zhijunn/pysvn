@@ -73,6 +73,9 @@ class Client:
                 raise NoSuchRevisionError(f'no such revision {rev_num}')
             elif 'E155037' in stderr:
                 raise PreviousOperationNotFinishedError()
+            elif 'Syntax error in revision' in stderr:
+                raise RevisionSyntaxError(
+                    f"with great power comes great responsibility, '{revision}' is not valid revision syntax")
             else:
                 raise SVNError(stderr)
 
@@ -97,9 +100,8 @@ class Client:
                 log_entries.append(log_entry)
 
             return log_entries
-        except xml.etree.ElementTree.ParseError:
-            raise RevisionSyntaxError(
-                f"with great power comes great responsibility, '{revision}' is not valid revision syntax")
+        except xml.etree.ElementTree.ParseError as e:
+            raise xml.etree.ElementTree.ParseError(f'parsing error: {e}')
 
 
     def _run_svn_cmd(self, args: List[str]) -> Popen:

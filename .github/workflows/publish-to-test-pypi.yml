@@ -20,8 +20,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest build dataclasses
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          svn --version
-          python update_svn_test_repo.py
+          cd tests/test_svn/ && svn relocate file:///home/runner/work/pysvn/pysvn/tests/test_repo && cd ../../
       - name: Test with pytest
         run: |
           pytest tests/
