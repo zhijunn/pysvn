@@ -20,5 +20,5 @@ def test_revert_recursive():
         f.write('\n' * 10)
         f.write('test')
     out = svn.revert('noice', recursive=True)
-    assert len(out.split('\n')) == 2
+    assert len(out.split('\n')) > 13
     
