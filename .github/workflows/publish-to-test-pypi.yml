@@ -21,7 +21,6 @@ jobs:
           pip install pytest build dataclasses
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           cd tests/test_svn/ && svn relocate file:///home/runner/work/pysvn/pysvn/tests/test_repo && cd ../../
-          cd tests/test_svn/ && svn cleanup && svn cleanup --vacuum-pristines && cd ../../
       - name: Test with pytest
         run: |
           pytest tests/
