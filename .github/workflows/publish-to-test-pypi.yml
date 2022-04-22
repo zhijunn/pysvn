@@ -20,6 +20,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest build dataclasses
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          apt list -a subversion
           sudo apt-get install subversion=1.13.0-3ubuntu0.1 -y
           svn --version
           python update_svn_test_repo.py
