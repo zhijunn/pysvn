@@ -1,4 +1,12 @@
-# pysvn Change Log
+# PySubversion Change Log
+
+## [1.0.0] 2022-04-26
+
+### This is the first major release of PySubversion
+
+- `[Feature]` Added the `cleanup` method.
+- `[Feature]` Added the `commit` method.
+- `[Support]` Added better and more detailed error handling and error messages.
 
 ## [0.3.0] 2022-04-21
 

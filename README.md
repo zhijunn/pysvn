@@ -54,7 +54,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-This client currently only supports the `revert`, `log`, `diff`, and `update` operations. Please put in a feature request if you would like more operations to be added!
+This client supports the major operations of the svn command-line client. Please put in a feature request if you would like more operations to be added!
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 

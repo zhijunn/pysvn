@@ -2,6 +2,7 @@
 '''
 import subprocess
 from typing import List, Tuple
+from pathlib import Path
 
 def check_svn_installed() -> bool:
     """Check if the current system has the svn cli client installed.

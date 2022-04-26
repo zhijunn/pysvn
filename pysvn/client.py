@@ -5,6 +5,8 @@ import os
 from typing import List, Union
 import xml.etree.ElementTree
 import pathlib
+import time
+import re
 
 from pysvn.errors import *
 from pysvn.models import *
@@ -68,16 +70,7 @@ class Client:
         data, stderr = get_output(cmd)
 
         if stderr:
-            if 'No such revision' in stderr:
-                rev_num = stderr.split(' ')[-1]
-                raise NoSuchRevisionError(f'no such revision {rev_num}')
-            elif 'E155037' in stderr:
-                raise PreviousOperationNotFinishedError()
-            elif 'Syntax error in revision' in stderr:
-                raise RevisionSyntaxError(
-                    f"with great power comes great responsibility, '{revision}' is not valid revision syntax")
-            else:
-                raise SVNError(stderr)
+            handle_stderr(stderr)
 
         try:
             root = xml.etree.ElementTree.fromstring(data)
@@ -106,6 +99,7 @@ class Client:
 
     def _run_svn_cmd(self, args: List[str]) -> Popen:
         args.insert(0, 'svn')
+        time.sleep(.5)
         return subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self.cwd)
 
 
@@ -136,13 +130,7 @@ class Client:
         data, stderr = get_output(cmd)
 
         if stderr:
-            if 'No such revision' in stderr:
-                rev_num = stderr.split(' ')[-1]
-                raise NoSuchRevisionError(f'no such revision {rev_num}')
-            elif 'E155037' in stderr:
-                raise PreviousOperationNotFinishedError()
-            else:
-                raise SVNError(stderr)
+            handle_stderr(stderr)
 
         paths: List[SVNItemPath] = []
         root = xml.etree.ElementTree.fromstring(data)
@@ -190,8 +178,8 @@ class Client:
         cmd = self._run_svn_cmd(revert_cmd)
         stdout, stderr = get_output(cmd)
 
-        if stderr and 'E155037' in stderr:
-            raise PreviousOperationNotFinishedError()
+        if stderr:
+            handle_stderr(stderr)
 
         return '' + stdout.strip() + stderr.strip()
     
@@ -298,16 +286,105 @@ class Client:
         stdout, stderr = get_output(self._run_svn_cmd(update_cmd))
 
         if stderr:
-            if 'No such revision' in stderr:
-                rev_num = stderr.split(' ')[-1]
-                raise NoSuchRevisionError(f'no such revision {rev_num}')
-            elif 'E155037' in stderr:
-                raise PreviousOperationNotFinishedError()
-            else:
-                raise SVNUpdateError(stderr)
+            handle_stderr(stderr)
+        
+        return stdout
+    
+
+    def cleanup(self, remove_unversioned: bool = False,
+                      remove_ignored: bool = False,
+                      vacuum_pristines: bool = False,
+                      include_externals: bool = False) -> str:
+        """## Either recover from an interrupted operation that left the working copy locked, or remove unwanted files.
+
+        1. When none of the options `remove_unversioned`, `remove_ignored`, and
+            `vacuum_pristines` is specified, remove all write locks (shown as `L` by
+            the `status` method) from the working copy. Usually, this is only
+            necessary if a Subversion client has crashed while using the working copy,
+            leaving it in an unusable state.
+
+            WARNING: There is no mechanism that will protect write locks still
+                    being used by other Subversion clients. Running this command
+                    without any options while another client is using the working
+                    copy can corrupt the working copy beyond repair!
+
+        2. If the `remove_unversioned` option or the `remove_ignored` option
+            is given, remove any unversioned or ignored items within WCPATH.
+            Note that the `status` method shows unversioned items as `?`,
+            and ignored items as `I` if the `no_ignore` option is given to it.
+
+        3. If the `vacuum_pristines` option is given, remove pristine copies of
+            files which are stored inside the .svn directory and which are no longer
+            referenced by any file in the working copy.
+
+        Args:
+            remove_unversioned (bool, optional): remove unversioned items. Defaults to False.
+            remove_ignored (bool, optional): remove ignored items. Defaults to False.
+            vacuum_pristines (bool, optional): remove unreferenced pristines from .svn directory. Defaults to False.
+            include_externals (bool, optional): also operate on externals defined by svn:externals properties. Defaults to False.
+
+        Returns:
+            str: cleanup command output
+        """
+        cleanup_cmd = ['cleanup']
+        if remove_unversioned:
+            cleanup_cmd.append('--remove-unversioned')
+        if remove_ignored:
+            cleanup_cmd.append('--remove-ignored')
+        if vacuum_pristines:
+            cleanup_cmd.append('--vacuum-pristines')
+        if include_externals:
+            cleanup_cmd.append('--include-externals')
+        
+        stdout, stderr = get_output(self._run_svn_cmd(cleanup_cmd))
+
+        if stderr:
+            handle_stderr(stderr)
         
         return stdout
 
+    
+    def commit(self, message: str,
+                     path: str = '.',
+                     depth: Depth = None,
+                     no_unlock: bool = False,
+                     include_externals: bool = False) -> str:
+        """## Send changes from your working copy to the repository.
+
+        If any targets are (or contain) locked items, those will be
+        unlocked after a successful commit, unless `no_unlock` is given.
+
+        If `include_externals` is given, also commit file and directory
+        externals reached by recursion. Do not commit externals with a
+        fixed revision.
+
+        Args:
+            message (str): specify log message
+            path (str, optional): path to file or directory to commit. Defaults to `'.'`.
+            depth (Depth, optional): limit operation by depth. Defaults to None.
+            no_unlock (bool, optional): don't unlock the targets. Defaults to False.
+            include_externals (bool, optional): also operate on externals defined by svn:externals properties. Defaults to False.
+
+        Returns:
+            str: commit command output
+        """
+        commit_cmd = ['commit', '--message', message]
+        if path != '.':
+            commit_cmd.insert(1, path)
+        if depth:
+            commit_cmd.extend(['--depth', depth.value])
+        if no_unlock:
+            commit_cmd.append('--no-unlock')
+        if include_externals:
+            commit_cmd.append('--include-externals')
+        
+        stdout, stderr = get_output(self._run_svn_cmd(commit_cmd))
+
+        if stderr:
+            handle_stderr(stderr)
+        
+        return stdout
+        
 
     def __str__(self) -> str:
         cmd = self._run_svn_cmd(['info'])
