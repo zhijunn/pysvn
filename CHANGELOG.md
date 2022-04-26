@@ -1,6 +1,6 @@
 # PySubversion Change Log
 
-## [1.0.0] 2022-04-26
+## [1.0.1] 2022-04-26
 
 ### This is the first major release of PySubversion
 

@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="pysubversion",
-    version="1.0.0",
+    version="1.0.1",
     keywords=["svn", "pysvn", "subversion"],
     description="Svn for python.",
     long_description=long_description,
