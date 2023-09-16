@@ -1,6 +1,7 @@
 '''pysvn utilities module.
 '''
 import subprocess
+import sys
 from typing import List, Tuple
 from pathlib import Path
 
@@ -34,6 +35,6 @@ def get_output(cmd: subprocess.Popen) -> Tuple[str, str]:
     Returns:
         Tuple[str, str]: stdout, stderr
     """
-    stdout = cmd.stdout.read().decode('utf-8').strip()
-    stderr = cmd.stderr.read().decode('utf-8').strip()
+    stdout = cmd.stdout.read().decode(sys.getdefaultencoding()).strip()
+    stderr = cmd.stderr.read().decode(sys.getdefaultencoding()).strip()
     return stdout, stderr

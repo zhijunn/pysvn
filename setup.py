@@ -7,23 +7,23 @@ with open("README.md", "r") as fh:
 
 setup(
     name="pysubversion",
-    version="1.0.1",
+    version="1.0.2",
     keywords=["svn", "pysvn", "subversion"],
     description="Svn for python.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="BSD License",
-    url="https://github.com/ryanbender2/pysvn",
-    author="Ryan Bender",
-    author_email="ryan.bender@cfacorp.com",
+    url="https://github.com/zhijunn/pysvn",
+    author="Ryan Bender, Forked by Zhijunn.",
+    author_email="zhijunn@yeah.net",
     packages=find_packages(exclude=["tests", "tests.*"]),
     include_package_data=True,
     platforms="any",
-    classifiers={
+    classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
         "Development Status :: 4 - Beta",
-    },
+    ],
     # install_requires = ["codecs"]
 )
